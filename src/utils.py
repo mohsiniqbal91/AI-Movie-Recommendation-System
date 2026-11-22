@@ -1,3 +1,4 @@
+
 import requests
 import streamlit as st
 
@@ -11,18 +12,23 @@ def get_movie_poster(movie_title):
 
     params = {
         "api_key": api_key,
-        "query": movie_title
+        "query": movie_title,
+        "include_adult": False
     }
 
-    response = requests.get(url, params=params, timeout=10)
+    try:
+        response = requests.get(url, params=params, timeout=10)
+        response.raise_for_status()
 
-    if response.status_code == 200:
-        data = response.json()
+        results = response.json().get("results", [])
 
-        if data["results"]:
-            poster_path = data["results"][0].get("poster_path")
+        for movie in results:
+            poster_path = movie.get("poster_path")
 
             if poster_path:
                 return f"https://image.tmdb.org/t/p/w500{poster_path}"
+
+    except requests.RequestException:
+        return None
 
     return None
